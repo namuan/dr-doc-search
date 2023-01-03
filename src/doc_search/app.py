@@ -10,9 +10,7 @@ from doc_search import setup_logging
 
 def parse_args() -> Namespace:
     parser = ArgumentParser(description=__doc__, formatter_class=RawDescriptionHelpFormatter)
-    parser.add_argument(
-        "-i", "--input", required=True, type=Path, help="Path to input file"
-    )
+    parser.add_argument("-i", "--input", required=True, type=Path, help="Path to input file")
     parser.add_argument(
         "-v",
         "--verbose",

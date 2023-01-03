@@ -1,10 +1,7 @@
 import logging
-import random
-import string
-import time
 
 
-def setup_logging(verbosity):  # pragma: no cover
+def setup_logging(verbosity: int) -> None:
     logging_level = logging.WARNING
     if verbosity == 1:
         logging_level = logging.INFO
