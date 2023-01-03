@@ -1,7 +1,7 @@
 fail_fast: true
 repos:
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.1.0
+    rev: v4.4.0
     hooks:
       - id: check-ast
       - id: check-added-large-files
@@ -49,12 +49,12 @@ repos:
         language: system
         types: [python]
 -   repo: https://github.com/commitizen-tools/commitizen
-    rev: v2.21.2
+    rev: v2.39.1
     hooks:
       - id: commitizen
         stages: [commit-msg]
 -   repo: https://github.com/sondrelg/pep585-upgrade
-    rev: v1
+    rev: v1.0
     hooks:
       - id: upgrade-type-hints
         args: [ '--futures=true' ]
