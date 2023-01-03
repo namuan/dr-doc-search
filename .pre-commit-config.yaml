@@ -1,0 +1,64 @@
+fail_fast: true
+repos:
+-   repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+      - id: check-ast
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-json
+      - id: check-yaml
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+-   repo: local
+    hooks:
+      - id: autoflake
+        name: autoflake
+        entry: poetry run autoflake -r -i --remove-all-unused-imports --remove-unused-variables
+        language: system
+        types: [ python ]
+      - id: isort
+        name: isort
+        entry: poetry run isort
+        language: system
+        types: [python]
+      - id: black
+        name: black
+        entry: poetry run black
+        language: system
+        types: [python]
+      - id: pyupgrade
+        name: pyupgrade
+        entry: pyupgrade --py37-plus
+        language: system
+        types: [python]
+      - id: mypy
+        name: mypy
+        entry: poetry run mypy .
+        require_serial: true
+        language: system
+        types: [python]
+        pass_filenames: false
+      - id: flake8
+        name: flake8
+        entry: poetry run flake8
+        language: system
+        types: [python]
+-   repo: https://github.com/commitizen-tools/commitizen
+    rev: v2.21.2
+    hooks:
+      - id: commitizen
+        stages: [commit-msg]
+-   repo: https://github.com/sondrelg/pep585-upgrade
+    rev: v1
+    hooks:
+      - id: upgrade-type-hints
+        args: [ '--futures=true' ]
+-   repo: https://github.com/syntaqx/git-hooks
+    rev: v0.0.17
+    hooks:
+      - id: shellcheck

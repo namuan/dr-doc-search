@@ -1,0 +1,80 @@
+name: Build and Release
+
+on:
+  pull_request:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  actionlint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download actionlint
+        run: bash <(curl https://raw.githubusercontent.com/rhysd/actionlint/main/scripts/download-actionlint.bash)
+        shell: bash
+      - name: Check workflow files
+        run: ./actionlint -color
+        shell: bash
+
+  lint-cruft:
+    name: Check if automatic project update was successful
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Fail if .rej files exist as structure update was not successful
+        run: test -z "$(find . -iname '*.rej')"
+
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/python-poetry-env
+      - run: make pre-commit
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: [ "3.7", "3.8", "3.9" ]
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/python-poetry-env
+        with:
+          python-version: ${{ matrix.python-version }}
+      - run: make tests
+
+  release:
+    if: "startsWith(github.event.head_commit.message, 'bump:')"
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/python-poetry-env
+      - name: Get latest version
+        id: latest_version
+        shell: bash
+        run: |
+          version=$(poetry version --short)
+          echo ::set-output name="version::$version"
+      - name: Changelog
+        id: changelog
+        shell: bash
+        run: |
+          VERSION=${{ steps.latest_version.outputs.version }}
+          body=$(sed -n '/^## '$VERSION'/,/^##.*)$/p' CHANGELOG.md | sed '$d')
+          body="${body//'%'/'%25'}"
+          body="${body//$'\n'/'%0A'}"
+          body="${body//$'\r'/'%0D'}"
+          echo ::set-output name="body::$body"
+      - name: Create release
+        uses: softprops/action-gh-release@v0.1.14
+        env:
+          GITHUB_TOKEN: ${{ secrets.PERSONAL_GH_TOKEN }}
+        with:
+          tag_name: ${{ steps.latest_version.outputs.version }}
+          name: Release ${{ steps.latest_version.outputs.version }}
+          body: ${{ steps.changelog.outputs.body }}
+          generate_release_notes: true

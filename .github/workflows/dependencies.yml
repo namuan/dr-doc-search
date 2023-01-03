@@ -1,0 +1,57 @@
+name: Autoupdate dependencies
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 0 1 * *"
+
+jobs:
+  auto-update-dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: ./.github/actions/python-poetry-env
+
+      - name: Install tabulate
+        run: python -m pip install tabulate
+
+      - name: Gather outdated dependencies
+        id: check_for_outdated_dependencies
+        run: |
+          body=$(poetry show -o -n)
+          echo ::set-output name="body::$body"
+
+      - name: Format PR message
+        if: ${{ steps.check_for_outdated_dependencies.outputs.body != 0 }}
+        id: get_outdated_dependencies
+        shell: bash
+        run: |
+          body=$(poetry show -o -n | sed 's/(!)//' | awk 'BEGIN {print "Package","Used","Update"}; {print $1,$2,$3}' | tabulate --header --format github -)
+          body=$(cat <<EOF
+          The following packages are outdated
+
+          $body
+          EOF
+          )
+          body="${body//'%'/'%25'}"
+          body="${body//$'\n'/'%0A'}"
+          body="${body//$'\r'/'%0D'}"
+          echo ::set-output name="body::$body"
+
+      - name: Update outdated packages
+        if: ${{ steps.check_for_outdated_dependencies.outputs.body != 0 }}
+        run: make deps
+
+      # behaviour if PR already exists: https://github.com/marketplace/actions/create-pull-request#action-behaviour
+      - name: Create Pull Request
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        if: ${{ steps.check_for_outdated_dependencies.outputs.body != 0 }}
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ env.GITHUB_TOKEN }}
+          commit-message: >-
+            chore: update dependencies
+          title: "[Actions] Auto-Update dependencies"
+          body: ${{ steps.get_outdated_dependencies.outputs.body }}
+          branch: chore/update-dependencies
+          delete-branch: true
