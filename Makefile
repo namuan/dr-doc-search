@@ -12,6 +12,10 @@ deps: ## Install/Update dependencies
 	poetry lock
 	poetry run pre-commit autoupdate
 
+local: ## Locally install the package
+	poetry install
+	dr-doc-search --help
+
 clean: ## Clean package
 	find . -type d -name '__pycache__' | xargs rm -rf
 	find . -type d -name '.temp' | xargs rm -rf
@@ -26,6 +30,9 @@ pre-commit: ## Manually run all precommit hooks
 
 pre-commit-tool: ## Manually run a single pre-commit hook
 	poetry run pre-commit run $(TOOL) --all-files
+
+add: ## Adds a package with poetry - Use make deps to update packages
+	poetry add $(PACKAGE)
 
 build: pre-commit ## Build package
 	poetry build
