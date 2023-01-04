@@ -1,6 +1,7 @@
 [tool.poetry]
 name = "dr-doc-search"
-version = "0.6.0"
+# This version is a placeholder autoupdated by poetry-dynamic-versioning
+version = "0.0.0"
 description = "Search through a document using a chat interface"
 authors = [
     "namuan <github@deskriders.dev>",
@@ -57,9 +58,14 @@ commitizen = "^2.20.3"
 pytest = "^7.2.0"
 pytest-cov = "^4.0.0"
 
+[tool.poetry-dynamic-versioning]
+enable = true
+style = "pep440"
+vcs = "git"
+
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "$tool.poetry.version"
+version = "0.6.0"
 tag_format = "$version"
 version_files = [
     "pyproject.toml:version",
