@@ -1,3 +1,9 @@
+## 0.8.0 (2023-01-04)
+
+### Feat
+
+- Add poetry_dynamic_versioning to automatic release versioning
+
 ## 0.7.0 (2023-01-04)
 
 ### Feat
