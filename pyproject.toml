@@ -59,7 +59,7 @@ pytest-cov = "^4.0.0"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.5.0"
+version = "0.6.0"
 tag_format = "$version"
 version_files = [
     "pyproject.toml:version",
