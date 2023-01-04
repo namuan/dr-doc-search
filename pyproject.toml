@@ -58,6 +58,7 @@ tryceratops = "*"
 commitizen = "^2.20.3"
 pytest = "^7.2.0"
 pytest-cov = "^4.0.0"
+poetry-dynamic-versioning = "^0.21.3"
 
 [tool.poetry-dynamic-versioning]
 enable = true
@@ -72,10 +73,6 @@ version_files = [
     "pyproject.toml:version",
 ]
 update_changelog_on_bump = true
-
-[build-system]
-requires = ["poetry-core>=1.0.0"]
-build-backend = "poetry.core.masonry.api"
 
 [tool.isort]
 profile = "black"
@@ -110,6 +107,10 @@ warn_redundant_casts = true
 warn_return_any = true
 check_untyped_defs = true
 show_error_codes = true
+
+[build-system]
+requires = ["poetry-core>=1.0.0", "poetry-dynamic-versioning"]
+build-backend = "poetry_dynamic_versioning.backend"
 
 [tool.poetry.scripts]
 dr-doc-search = 'doc_search.app:main'
