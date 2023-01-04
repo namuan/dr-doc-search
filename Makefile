@@ -34,7 +34,14 @@ pre-commit-tool: ## Manually run a single pre-commit hook
 add: ## Adds a package with poetry - Use make deps to update packages
 	poetry add $(PACKAGE)
 
-build: pre-commit ## Build package
+add-dev: ## Adds a dev package with poetry - Use make deps to update packages
+	poetry add --group dev $(PACKAGE)
+
+tests: clean ## Run all tests
+	poetry run pytest
+	poetry run coverage xml -i
+
+build: pre-commit tests ## Build package
 	poetry build
 
 bump: build ## Bump version and update changelog

@@ -34,7 +34,7 @@ python = ">=3.9.0, <4.0"
 py-executable-checklist = "1.3.1"
 rich = "^13.0.0"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 autoflake = "*"
 black = "*"
 flake8 = "*"
@@ -54,6 +54,8 @@ python-kacl = "*"
 pyupgrade = "*"
 tryceratops = "*"
 commitizen = "^2.20.3"
+pytest = "^7.2.0"
+pytest-cov = "^4.0.0"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
@@ -76,6 +78,20 @@ src_paths = ["src", "tests"]
 line-length = 120
 target-version = ["py37", "py38", "py39"]
 include = '\.pyi?$'
+
+[tool.pytest.ini_options]
+addopts = """\
+    --cov doc_search \
+    --cov-report term-missing \
+    --no-cov-on-fail \
+"""
+
+[tool.coverage.report]
+fail_under = 100
+omit = ["src/doc_search/app.py", "src/doc_search/__init__.py"]
+exclude_lines = [
+    'pragma: no cover'
+]
 
 [tool.mypy]
 disallow_any_unimported = true
