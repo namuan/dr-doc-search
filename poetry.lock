@@ -284,21 +284,6 @@ files = [
 ]
 
 [[package]]
-name = "dunamai"
-version = "1.15.0"
-description = "Dynamic version generation"
-category = "dev"
-optional = false
-python-versions = ">=3.5,<4.0"
-files = [
-    {file = "dunamai-1.15.0-py3-none-any.whl", hash = "sha256:646d7a6c07d0ec8412ac43c1a3546f1d1b52f3ed918f4bfbefe32439b49dec7e"},
-    {file = "dunamai-1.15.0.tar.gz", hash = "sha256:d6088922df3226a8234c228803bb01902a83766d04c2cddb33d4dd3bf85ec9a5"},
-]
-
-[package.dependencies]
-packaging = ">=20.9"
-
-[[package]]
 name = "exceptiongroup"
 version = "1.1.0"
 description = "Backport of PEP 654 (exception groups)"
@@ -917,26 +902,6 @@ files = [
 [package.extras]
 dev = ["pre-commit", "tox"]
 testing = ["pytest", "pytest-benchmark"]
-
-[[package]]
-name = "poetry-dynamic-versioning"
-version = "0.21.3"
-description = "Plugin for Poetry to enable dynamic versioning based on VCS tags"
-category = "dev"
-optional = false
-python-versions = ">=3.7,<4.0"
-files = [
-    {file = "poetry_dynamic_versioning-0.21.3-py3-none-any.whl", hash = "sha256:39c8055a20aad980a6e11419dc44dd8000fdb4fe94fd3fc6380822771e6cc2a8"},
-    {file = "poetry_dynamic_versioning-0.21.3.tar.gz", hash = "sha256:2e08ca0f089e2458f9cd41f2d37f01ce3ae4e40975004dc143fbf86b793ec909"},
-]
-
-[package.dependencies]
-dunamai = ">=1.14.0,<2.0.0"
-jinja2 = ">=2.11.1,<4"
-tomlkit = ">=0.4"
-
-[package.extras]
-plugin = ["poetry (>=1.2.0,<2.0.0)"]
 
 [[package]]
 name = "pre-commit"
@@ -1679,4 +1644,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9.0, <4.0"
-content-hash = "d43348fb0aefd0303ba6469d3bffc45d589ae9aba438a6c26efe701ba25b1d78"
+content-hash = "378def26ac19f8af3455cec55a0d57b88292d55e4497e6adaadfc12c716b9473"
