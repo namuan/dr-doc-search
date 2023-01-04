@@ -1018,6 +1018,28 @@ files = [
 markdown = ">=3.2"
 
 [[package]]
+name = "pypdf"
+version = "3.2.0"
+description = "A pure-python PDF library capable of splitting, merging, cropping, and transforming PDF files"
+category = "main"
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "pypdf-3.2.0-py3-none-any.whl", hash = "sha256:5d20819e7d554b8865d32e98d91d75c819d6372b000ab3271040d58ca614ac2c"},
+    {file = "pypdf-3.2.0.tar.gz", hash = "sha256:77ae2b168cc2f80f56f27566e8466431b7bd05586b8efb7b8ac0bee1e0bdf261"},
+]
+
+[package.dependencies]
+typing_extensions = {version = ">=3.10.0.0", markers = "python_version < \"3.10\""}
+
+[package.extras]
+crypto = ["PyCryptodome"]
+dev = ["black", "flit", "pip-tools", "pre-commit (<2.18.0)", "pytest-cov", "wheel"]
+docs = ["myst_parser", "sphinx", "sphinx_rtd_theme"]
+full = ["Pillow", "PyCryptodome"]
+image = ["Pillow"]
+
+[[package]]
 name = "pytest"
 version = "7.2.0"
 description = "pytest: simple powerful testing with Python"
@@ -1504,7 +1526,7 @@ toml = ">=0.10.2"
 name = "typing-extensions"
 version = "4.4.0"
 description = "Backported and Experimental Type Hints for Python 3.7+"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=3.7"
 files = [
@@ -1622,4 +1644,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9.0, <4.0"
-content-hash = "5528a2cdf84abd4b60ddbd073359a9794580a30d92dd561d1d1330618aea8231"
+content-hash = "378def26ac19f8af3455cec55a0d57b88292d55e4497e6adaadfc12c716b9473"

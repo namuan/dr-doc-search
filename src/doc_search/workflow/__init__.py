@@ -1,5 +1,7 @@
-from .do_something import DoSomething
+from .verify_input_file import VerifyInputFile
 
 
 def workflow_steps() -> list:
-    return [DoSomething]
+    return [
+        VerifyInputFile,
+    ]
