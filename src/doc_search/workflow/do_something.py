@@ -15,4 +15,4 @@ class DoSomething(WorkflowBase):
         logging.info("Load %s", self.input_pdf_path)
 
         # output
-        return {"greetings": f"Hello {self.input_pdf_path.as_posix()}"}
+        return {"output_file": f"Hello {self.input_pdf_path.as_posix()}"}

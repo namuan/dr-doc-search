@@ -12,4 +12,4 @@ def test_return_input_pdf_file() -> None:
 
     run_workflow(context, [DoSomething])
 
-    assert context["greetings"] == "Hello tests/data/input.pdf"
+    assert context["output_file"] == "Hello tests/data/input.pdf"
