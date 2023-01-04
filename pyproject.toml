@@ -67,6 +67,7 @@ vcs = "git"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
+annotated_tag = true
 version = "0.8.0"
 tag_format = "$version"
 version_files = [
