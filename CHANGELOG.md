@@ -1,3 +1,9 @@
+## 0.10.0 (2023-01-04)
+
+### Feat
+
+- Single version using another method
+
 ## 0.9.0 (2023-01-04)
 
 ### Feat

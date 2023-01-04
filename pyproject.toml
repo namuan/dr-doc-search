@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "dr-doc-search"
-version = "0.9.0"
+version = "0.10.0"
 description = "Search through a document using a chat interface"
 authors = [
     "namuan <github@deskriders.dev>",
@@ -60,7 +60,7 @@ pytest-cov = "^4.0.0"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
-version = "0.9.0"
+version = "0.10.0"
 tag_format = "$version"
 version_files = [
     "pyproject.toml:version",
