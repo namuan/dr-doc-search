@@ -1,3 +1,9 @@
+## 0.11.0 (2023-01-05)
+
+### Feat
+
+- Add steps to convert pdf file to scanned pages of text
+
 ## 0.10.0 (2023-01-04)
 
 ### Feat
