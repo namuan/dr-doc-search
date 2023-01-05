@@ -39,7 +39,9 @@ add-dev: ## Adds a dev package with poetry - Use make deps to update packages
 
 tests: clean ## Run all tests
 	poetry run pytest
-	poetry run coverage xml -i
+
+cov-report: ## Generate coverage report
+	poetry run coverage html; open htmlcov/index.html
 
 build: pre-commit tests ## Build package
 	poetry build

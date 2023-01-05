@@ -83,3 +83,4 @@ fireprofile
 geckodriver.log
 backroom/
 .temp/
+**/OutputDir/**/*.*

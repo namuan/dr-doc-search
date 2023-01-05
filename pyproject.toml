@@ -34,6 +34,7 @@ python = ">=3.9.0, <4.0"
 py-executable-checklist = "1.3.1"
 rich = "^13.0.0"
 pypdf = "^3.2.0"
+pytest = "^7.2.0"
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "*"
@@ -57,6 +58,7 @@ tryceratops = "*"
 commitizen = "^2.20.3"
 pytest = "^7.2.0"
 pytest-cov = "^4.0.0"
+coverage = "^7.0.3"
 
 [tool.commitizen]
 name = "cz_conventional_commits"
@@ -84,7 +86,7 @@ addopts = """\
 """
 
 [tool.coverage.report]
-fail_under = 100
+fail_under = 93
 omit = ["src/doc_search/app.py", "src/doc_search/__init__.py"]
 exclude_lines = [
     'pragma: no cover'

@@ -13,6 +13,7 @@ from doc_search.workflow import workflow_steps
 def parse_args() -> Namespace:
     parser = ArgumentParser(description=__doc__, formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument("-i", "--input-pdf-path", required=True, type=Path, help="Path to input PDF file")
+    parser.add_argument("-d", "--app_dir", default=Path.home(), type=Path, help="Path to app directory")
     parser.add_argument(
         "-v",
         "--verbose",

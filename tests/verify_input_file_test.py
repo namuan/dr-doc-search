@@ -13,4 +13,4 @@ def test_return_pdf_properties() -> None:
 
     run_workflow(context, [VerifyInputFile])
 
-    assert context["pdf_properties"].get("pages") == 2
+    assert context["pdf_pages"] == 2

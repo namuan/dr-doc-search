@@ -15,8 +15,4 @@ class VerifyInputFile(WorkflowBase):
         reader = PdfReader(self.input_pdf_path)
 
         # output
-        return {
-            "pdf_properties": {
-                "pages": len(reader.pages),
-            }
-        }
+        return {"pdf_pages": len(reader.pages)}
