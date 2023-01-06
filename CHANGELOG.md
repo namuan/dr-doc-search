@@ -1,3 +1,9 @@
+## 1.0.1 (2023-01-06)
+
+### Fix
+
+- Ignore tests (temp) as they can't run on Github Actions due to binary dependencies
+
 ## 1.0.0 (2023-01-06)
 
 ### Feat
