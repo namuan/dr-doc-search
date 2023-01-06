@@ -23,6 +23,7 @@ clean: ## Clean package
 	rm -rf build dist
 
 comby: ## Generic rules (required comby https://comby.dev/docs/)
+	echo  "Requires Comby https://comby.dev/docs/"
 	comby 'print(:[1])' 'logging.info(:[1])' -directory 'src' -extensions 'py' -in-place
 
 pre-commit: ## Manually run all precommit hooks

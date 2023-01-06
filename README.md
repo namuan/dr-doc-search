@@ -35,7 +35,6 @@ dr-doc-search --help
 * Requirements:
   * Python 3.7+
   * [Poetry](https://python-poetry.org/)
-  * [Comby](https://comby.dev/docs/)
 
 * Create a virtual environment and install the dependencies
 ```sh
