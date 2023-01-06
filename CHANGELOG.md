@@ -1,3 +1,9 @@
+## 1.0.0 (2023-01-06)
+
+### Feat
+
+- Write workflow to generate book summary
+
 ## 0.11.0 (2023-01-05)
 
 ### Feat
