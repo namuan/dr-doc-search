@@ -15,7 +15,12 @@
 
 ---
 
-Search through a document using a chat interface.
+Converse with an ebook (PDF)
+
+## Pre-requisites
+
+- [Tessaract OCR](https://github.com/tesseract-ocr/tesseract)
+- [ImageMagick](https://imagemagick.org/index.php)
 
 ## Installation
 
