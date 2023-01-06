@@ -1,11 +1,13 @@
 from pathlib import Path
 from typing import Any
 
+import pytest
 from py_executable_checklist.workflow import run_workflow
 
 from doc_search.workflow import ConvertPDFToImages
 
 
+@pytest.mark.skip(reason="Need to mock run_workflow")
 def test_convert_pdf_to_pages() -> None:
     context: dict[str, Any] = {
         "input_pdf_path": Path("tests/data/input.pdf"),

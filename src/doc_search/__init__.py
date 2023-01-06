@@ -6,6 +6,7 @@ from functools import wraps
 
 import openai
 from dotenv import load_dotenv
+from rich.progress import track
 
 load_dotenv()
 
@@ -42,9 +43,10 @@ def retry(
                 try:
                     return f(*args, **kwargs)
                 except exceptions as e:
-                    msg = f"🚨 {e} {os.linesep} ⌛ Retrying in {m_delay} seconds..."
+                    msg = f"🚨 {e} {os.linesep} "
                     logging.warning(msg)
-                    time.sleep(m_delay)
+                    for _ in track(range(m_delay), description="⌛ Retrying in ..."):
+                        time.sleep(1)
                     m_retries -= 1
                     m_delay *= back_off
             return f(*args, **kwargs)

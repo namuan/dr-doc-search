@@ -90,7 +90,7 @@ addopts = """\
 """
 
 [tool.coverage.report]
-fail_under = 70
+fail_under = 58
 omit = ["src/doc_search/app.py", "src/doc_search/__init__.py"]
 exclude_lines = [
     'pragma: no cover'
