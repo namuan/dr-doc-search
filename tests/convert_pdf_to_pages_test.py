@@ -9,7 +9,8 @@ from doc_search.workflow import ConvertPDFToImages
 def test_convert_pdf_to_pages() -> None:
     context: dict[str, Any] = {
         "input_pdf_path": Path("tests/data/input.pdf"),
-        "pdf_pages": 2,
+        "start_page": 1,
+        "end_page": 2,
         "app_dir": Path(".") / "tests",
     }
     expected_output_path = Path("tests/OutputDir/dr-doc-search/input/images")

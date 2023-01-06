@@ -9,15 +9,16 @@ class ConvertPDFToImages(WorkflowBase):
     """
 
     input_pdf_path: Path
-    pdf_pages: int
     app_dir: Path
+    start_page: int
+    end_page: int
 
     def execute(self) -> dict:
         pdf_file_name = self.input_pdf_path.stem
         output_dir = self.app_dir / "OutputDir/dr-doc-search" / pdf_file_name / "images"
         output_dir.mkdir(parents=True, exist_ok=True)
 
-        for i in range(self.pdf_pages):
+        for i in range(self.start_page, self.end_page):
             input_file_page = f"{self.input_pdf_path}[{i}]"
             image_path = output_dir / f"output-{i}.png"
             if image_path.exists():

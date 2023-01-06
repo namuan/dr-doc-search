@@ -20,8 +20,9 @@ class ConvertImagesToText(WorkflowBase):
         for image_path in self.pdf_images_path.glob("*.png"):
             image_name = image_path.stem
             text_path = output_dir / f"{image_name}"
-            if text_path.exists():
+            if text_path.with_suffix(".txt").exists():
                 continue
+
             tesseract_command = f"tesseract {image_path} {text_path} --oem 1 -l eng"
             run_command(tesseract_command)
 

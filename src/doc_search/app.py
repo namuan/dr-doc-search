@@ -5,6 +5,7 @@ from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
 from pathlib import Path
 
 from py_executable_checklist.workflow import run_workflow
+from rich import print
 
 from doc_search import setup_logging
 from doc_search.workflow import workflow_steps
@@ -14,6 +15,13 @@ def parse_args() -> Namespace:
     parser = ArgumentParser(description=__doc__, formatter_class=RawDescriptionHelpFormatter)
     parser.add_argument("-i", "--input-pdf-path", required=True, type=Path, help="Path to input PDF file")
     parser.add_argument("-d", "--app_dir", default=Path.home(), type=Path, help="Path to app directory")
+    parser.add_argument(
+        "-s", "--start-page", default=-1, type=int, help="Specify if you want to start from a specific page"
+    )
+    parser.add_argument("-e", "--end-page", default=-1, type=int, help="Specify if you want to end at a specific page")
+    parser.add_argument("-q", "--input-question", required=True, help="Question to ask")
+    parser.add_argument("-w", "--overwrite-index", action="store_true", help="Overwrite existing index")
+
     parser.add_argument(
         "-v",
         "--verbose",
@@ -30,6 +38,8 @@ def main() -> None:  # pragma: no cover
     setup_logging(args.verbose)
     context = args.__dict__
     run_workflow(context, workflow_steps())
+    print("[bold]Question: " + context["input_question"] + "[/bold]")
+    print("[blue]Answer: " + context["output"] + "[/blue]")
 
 
 if __name__ == "__main__":  # pragma: no cover
