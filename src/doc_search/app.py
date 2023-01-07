@@ -9,7 +9,7 @@ from rich import print
 
 from doc_search import setup_logging
 from doc_search.web import run_web
-from doc_search.workflow import workflow_steps
+from doc_search.workflow import training_workflow_steps, workflow_steps
 
 
 def parse_args() -> Namespace:
@@ -24,6 +24,7 @@ def parse_args() -> Namespace:
         "-q", "--input-question", default="Can you summarize the lessons from this book?", help="Question to ask"
     )
     parser.add_argument("-w", "--overwrite-index", action="store_true", help="Overwrite existing index")
+    parser.add_argument("-t", "--train", action="store_true", help="Train and index the PDF file")
     parser.add_argument("-a", "--web-app", action="store_true", help="Start WebApp")
 
     parser.add_argument(
@@ -43,6 +44,8 @@ def main() -> None:  # pragma: no cover
     context = args.__dict__
     if args.web_app:
         run_web(context)
+    elif args.train:
+        run_workflow(context, training_workflow_steps())
     else:
         run_workflow(context, workflow_steps())
         print("[bold]Question: " + context["input_question"] + "[/bold]")

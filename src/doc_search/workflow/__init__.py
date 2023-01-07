@@ -1,5 +1,6 @@
 import logging
 import pickle
+import shutil
 from pathlib import Path
 from typing import Any
 
@@ -12,24 +13,41 @@ from langchain.vectorstores.faiss import FAISS
 from py_executable_checklist.workflow import WorkflowBase, run_command
 from pypdf import PdfReader
 from rich import print
+from slug import slug  # type: ignore
 
 from doc_search import retry
 
 
+def slugify_pdf_name(input_pdf_path: Path) -> str:
+    return str(slug(input_pdf_path.stem))
+
+
 def pdf_name_from(input_pdf_path: Path) -> str:
-    return input_pdf_path.stem
+    return slugify_pdf_name(input_pdf_path)
+
+
+def output_directory_for_pdf(app_dir: Path, input_pdf_path: Path) -> Path:
+    pdf_file_name = pdf_name_from(input_pdf_path)
+    return app_dir / "OutputDir/dr-doc-search" / pdf_file_name
+
+
+def copy_raw_pdf_file(app_dir: Path, input_pdf_path: Path) -> Path:
+    pdf_file_name = pdf_name_from(input_pdf_path)
+    output_dir = app_dir / "OutputDir/dr-doc-search" / pdf_file_name
+    output_dir.mkdir(parents=True, exist_ok=True)
+    new_input_pdf_path = output_dir / f"{pdf_file_name}.pdf"
+    shutil.copy2(input_pdf_path, new_input_pdf_path)
+    return new_input_pdf_path
 
 
 def pdf_to_faiss_db_path(app_dir: Path, input_pdf_path: Path) -> Path:
-    pdf_file_name = pdf_name_from(input_pdf_path)
-    output_dir = app_dir / "OutputDir/dr-doc-search" / pdf_file_name / "index"
+    output_dir = output_directory_for_pdf(app_dir, input_pdf_path) / "index"
     output_dir.mkdir(parents=True, exist_ok=True)
     return output_dir / "index.pkl"
 
 
 def pdf_to_index_path(app_dir: Path, input_pdf_path: Path) -> Path:
-    pdf_file_name = input_pdf_path.stem
-    output_dir = app_dir / "OutputDir/dr-doc-search" / pdf_file_name / "index"
+    output_dir = output_directory_for_pdf(app_dir, input_pdf_path) / "index"
     output_dir.mkdir(parents=True, exist_ok=True)
     return output_dir / "docsearch.index"
 
@@ -39,17 +57,24 @@ class VerifyInputFile(WorkflowBase):
     Verify input file and return pdf stats
     """
 
+    app_dir: Path
     input_pdf_path: Path
     start_page: int
     end_page: int
 
     def execute(self) -> dict:
-        reader = PdfReader(self.input_pdf_path)
+        new_pdf_file_path = copy_raw_pdf_file(self.app_dir, self.input_pdf_path)
+        reader = PdfReader(new_pdf_file_path)
         total_pages = len(reader.pages)
         start_page = self.start_page if self.start_page != -1 else 1
         end_page = self.end_page if self.end_page != -1 else total_pages
 
-        return {"start_page": start_page, "end_page": end_page, "total_pages": total_pages}
+        return {
+            "input_pdf_path": new_pdf_file_path,
+            "start_page": start_page,
+            "end_page": end_page,
+            "total_pages": total_pages,
+        }
 
 
 class ConvertPDFToImages(WorkflowBase):
@@ -63,8 +88,7 @@ class ConvertPDFToImages(WorkflowBase):
     end_page: int
 
     def execute(self) -> dict:
-        pdf_file_name = self.input_pdf_path.stem
-        output_dir = self.app_dir / "OutputDir/dr-doc-search" / pdf_file_name / "images"
+        output_dir = output_directory_for_pdf(self.app_dir, self.input_pdf_path) / "images"
         output_dir.mkdir(parents=True, exist_ok=True)
 
         for i in range(self.start_page, self.end_page):
@@ -88,8 +112,7 @@ class ConvertImagesToText(WorkflowBase):
     app_dir: Path
 
     def execute(self) -> dict:
-        pdf_file_name = self.input_pdf_path.stem
-        output_dir = self.app_dir / "OutputDir/dr-doc-search" / pdf_file_name / "scanned"
+        output_dir = output_directory_for_pdf(self.app_dir, self.input_pdf_path) / "scanned"
         output_dir.mkdir(parents=True, exist_ok=True)
 
         for image_path in self.pdf_images_path.glob("*.png"):
@@ -243,7 +266,6 @@ AI:"""
         return qa.run(prompt)
 
 
-# TODO: Only run when --train argument is passed from command line
 def training_workflow_steps() -> list:
     return [
         VerifyInputFile,

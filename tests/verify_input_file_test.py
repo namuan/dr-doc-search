@@ -8,6 +8,7 @@ from doc_search.workflow import VerifyInputFile
 
 def test_return_pdf_properties() -> None:
     context: dict[str, Any] = {
+        "app_dir": Path.cwd(),
         "input_pdf_path": Path("tests/data/input.pdf"),
         "start_page": -1,
         "end_page": -1,
@@ -22,6 +23,7 @@ def test_return_pdf_properties() -> None:
 
 def test_override_start_and_end_pages() -> None:
     context: dict[str, Any] = {
+        "app_dir": Path.cwd(),
         "input_pdf_path": Path("tests/data/input.pdf"),
         "start_page": 2,
         "end_page": 2,

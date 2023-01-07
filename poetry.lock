@@ -2010,6 +2010,17 @@ files = [
 ]
 
 [[package]]
+name = "slug"
+version = "2.0"
+description = "Python module to convert str to slug"
+category = "main"
+optional = false
+python-versions = "*"
+files = [
+    {file = "slug-2.0-py3-none-any.whl", hash = "sha256:f55b24a0563428ce56243079f6aeb79c0dd1cc5bbf8b39b10bd6e5263ba8be5f"},
+]
+
+[[package]]
 name = "smmap"
 version = "5.0.0"
 description = "A pure Python implementation of a sliding window memory map manager"
@@ -2352,4 +2363,4 @@ testing = ["flake8 (<5)", "func-timeout", "jaraco.functools", "jaraco.itertools"
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.9.0, <4.0"
-content-hash = "63ba1df6e953119e1330dc91b626d073f20c59e8df8a9afeca312563c003f20a"
+content-hash = "1b4573d056d857cacbbe6ee164af7190b06b11bc2cd794326a54cfbd0f592896"
