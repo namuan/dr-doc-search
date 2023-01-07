@@ -4,7 +4,6 @@ from doc_search.workflow import (
     ConvertImagesToText,
     ConvertPDFToImages,
     CreateIndex,
-    FindInterestingBlocks,
     LoadIndex,
     VerifyInputFile,
     workflow_steps,
@@ -21,6 +20,5 @@ def test_return_expected_workflow() -> None:
         CombineAllText,
         CreateIndex,
         LoadIndex,
-        FindInterestingBlocks,
         AskQuestion,
     ]

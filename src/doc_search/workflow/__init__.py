@@ -8,6 +8,7 @@ import faiss  # type: ignore
 import openai
 from langchain import OpenAI, VectorDBQA
 from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.prompts import PromptTemplate
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores.faiss import FAISS
 from py_executable_checklist.workflow import WorkflowBase, run_command
@@ -210,61 +211,41 @@ class LoadIndex(WorkflowBase):
         return {"search_index": search_index}
 
 
-class FindInterestingBlocks(WorkflowBase):
-    """
-    Load existing index for embedding search
-    """
-
-    input_question: str
-    search_index: Any
-
-    def prompt_from_question(self, question: str) -> str:
-        return f"""Instructions:
-- You are a text based search engine.
-- Provide keywords and summary which should be relevant to answer the question.
-- Retain as much information as needed to answer the question later.
-
-Question:
-{question}"""
-
-    def execute(self) -> dict:
-        prompt = self.prompt_from_question(self.input_question)
-        docs = self.search_index.similarity_search(prompt)
-        return {"selected_blocks": docs[0].page_content}
-
-
 class AskQuestion(WorkflowBase):
     """
-    Load existing index for embedding search
+    Ask question by sending prompt along with indexed data
     """
 
     input_question: str
-    selected_blocks: str
     search_index: Any
 
-    def prompt_from_question(self, question: str, selected_blocks: str) -> str:
-        return f"""
+    def prompt_from_question(self) -> PromptTemplate:
+        template = """
 Instructions:
-- Answer and guide the human when they ask for it.
+- You are a text based search engine
+- Provide keywords and summary which should be relevant to answer the question.
 - Provide detailed responses that relate to the humans prompt.
+- If there is a code block in the answer then wrap it in triple backticks.
+- Also tag the code block with the language name.
 
-Summarize text.
-{selected_blocks}
+{context}
 
 - Human:
 ${question}
 
-AI:"""
+- You:"""
+
+        return PromptTemplate(input_variables=["context", "question"], template=template)
 
     def execute(self) -> dict:
-        prompt = self.prompt_from_question(self.input_question, self.selected_blocks)
-        qa = VectorDBQA.from_llm(llm=OpenAI(), vectorstore=self.search_index)
-        output = self.send_prompt(prompt, qa)
+        prompt = self.prompt_from_question()
+        qa = VectorDBQA.from_llm(llm=OpenAI(), prompt=prompt, vectorstore=self.search_index)
+        output = self.send_prompt(qa, self.input_question)
         return {"output": output}
 
     @retry(exceptions=openai.error.RateLimitError, tries=2, delay=60, back_off=2)
-    def send_prompt(self, prompt: str, qa: VectorDBQA) -> Any:
-        return qa.run(prompt)
+    def send_prompt(self, qa: VectorDBQA, input_question: str) -> Any:
+        return qa.run(query=input_question)
 
 
 def training_workflow_steps() -> list:
@@ -280,7 +261,6 @@ def training_workflow_steps() -> list:
 def inference_workflow_steps() -> list:
     return [
         LoadIndex,
-        FindInterestingBlocks,
         AskQuestion,
     ]
 

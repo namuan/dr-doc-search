@@ -21,7 +21,7 @@ def parse_args() -> Namespace:
     )
     parser.add_argument("-e", "--end-page", default=-1, type=int, help="Specify if you want to end at a specific page")
     parser.add_argument(
-        "-q", "--input-question", default="Can you summarize the lessons from this book?", help="Question to ask"
+        "-q", "--input-question", default="Can you provide a summary of the context?", help="Question to ask"
     )
     parser.add_argument("-w", "--overwrite-index", action="store_true", help="Overwrite existing index")
     parser.add_argument("-t", "--train", action="store_true", help="Train and index the PDF file")

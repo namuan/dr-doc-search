@@ -15,10 +15,12 @@ openai.debug = False
 
 
 def setup_logging(verbosity: int) -> None:
+
     logging_level = logging.WARNING
     if verbosity == 1:
         logging_level = logging.INFO
     elif verbosity >= 2:
+        openai.debug = True
         logging_level = logging.DEBUG
 
     logging.basicConfig(
