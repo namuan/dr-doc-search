@@ -36,7 +36,8 @@ def copy_raw_pdf_file(app_dir: Path, input_pdf_path: Path) -> Path:
     output_dir = app_dir / "OutputDir/dr-doc-search" / pdf_file_name
     output_dir.mkdir(parents=True, exist_ok=True)
     new_input_pdf_path = output_dir / f"{pdf_file_name}.pdf"
-    shutil.copy2(input_pdf_path, new_input_pdf_path)
+    if input_pdf_path != new_input_pdf_path:
+        shutil.copyfile(input_pdf_path, new_input_pdf_path)
     return new_input_pdf_path
 
 
