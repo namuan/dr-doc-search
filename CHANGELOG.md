@@ -1,3 +1,17 @@
+## 1.2.0 (2023-01-07)
+
+### Feat
+
+- Remove duplicate processing of finding similarities
+
+### Fix
+
+- Only copy pdf if the source path is different
+
+### Refactor
+
+- Simplify code
+
 ## 1.1.0 (2023-01-07)
 
 ### Feat
