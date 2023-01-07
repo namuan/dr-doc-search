@@ -9,8 +9,7 @@ from langchain import OpenAI, VectorDBQA
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores.faiss import FAISS
-from py_executable_checklist.workflow import WorkflowBase
-from py_executable_checklist.workflow import run_command
+from py_executable_checklist.workflow import WorkflowBase, run_command
 from pypdf import PdfReader
 
 from doc_search import retry
