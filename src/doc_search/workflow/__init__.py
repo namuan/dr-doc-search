@@ -285,13 +285,4 @@ def inference_workflow_steps() -> list:
 
 
 def workflow_steps() -> list:
-    return [
-        VerifyInputFile,
-        ConvertPDFToImages,
-        ConvertImagesToText,
-        CombineAllText,
-        CreateIndex,
-        LoadIndex,
-        FindInterestingBlocks,
-        AskQuestion,
-    ]
+    return training_workflow_steps() + inference_workflow_steps()
