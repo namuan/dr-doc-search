@@ -8,6 +8,7 @@ from py_executable_checklist.workflow import run_workflow
 from rich import print
 
 from doc_search import setup_logging
+from doc_search.web import run_web
 from doc_search.workflow import workflow_steps
 
 
@@ -19,8 +20,11 @@ def parse_args() -> Namespace:
         "-s", "--start-page", default=-1, type=int, help="Specify if you want to start from a specific page"
     )
     parser.add_argument("-e", "--end-page", default=-1, type=int, help="Specify if you want to end at a specific page")
-    parser.add_argument("-q", "--input-question", required=True, help="Question to ask")
+    parser.add_argument(
+        "-q", "--input-question", default="Can you summarize the lessons from this book?", help="Question to ask"
+    )
     parser.add_argument("-w", "--overwrite-index", action="store_true", help="Overwrite existing index")
+    parser.add_argument("-a", "--web-app", action="store_true", help="Start WebApp")
 
     parser.add_argument(
         "-v",
@@ -37,9 +41,12 @@ def main() -> None:  # pragma: no cover
     args = parse_args()
     setup_logging(args.verbose)
     context = args.__dict__
-    run_workflow(context, workflow_steps())
-    print("[bold]Question: " + context["input_question"] + "[/bold]")
-    print("[blue]Answer: " + context["output"] + "[/blue]")
+    if args.web_app:
+        run_web(context)
+    else:
+        run_workflow(context, workflow_steps())
+        print("[bold]Question: " + context["input_question"] + "[/bold]")
+        print("[blue]Answer: " + context["output"] + "[/blue]")
 
 
 if __name__ == "__main__":  # pragma: no cover

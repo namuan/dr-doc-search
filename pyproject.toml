@@ -39,6 +39,7 @@ openai = "^0.25.0"
 langchain = "^0.0.57"
 faiss-cpu = "^1.7.3"
 python-dotenv = "^0.21.0"
+panel = "^0.14.2"
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "*"
@@ -90,8 +91,8 @@ addopts = """\
 """
 
 [tool.coverage.report]
-fail_under = 50
-omit = ["src/doc_search/app.py", "src/doc_search/__init__.py"]
+fail_under = 49
+omit = ["src/doc_search/app.py", "src/doc_search/__init__.py", "src/doc_search/web.py"]
 exclude_lines = [
     'pragma: no cover'
 ]

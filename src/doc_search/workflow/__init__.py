@@ -11,8 +11,27 @@ from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores.faiss import FAISS
 from py_executable_checklist.workflow import WorkflowBase, run_command
 from pypdf import PdfReader
+from rich import print
 
 from doc_search import retry
+
+
+def pdf_name_from(input_pdf_path: Path) -> str:
+    return input_pdf_path.stem
+
+
+def pdf_to_faiss_db_path(app_dir: Path, input_pdf_path: Path) -> Path:
+    pdf_file_name = pdf_name_from(input_pdf_path)
+    output_dir = app_dir / "OutputDir/dr-doc-search" / pdf_file_name / "index"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    return output_dir / "index.pkl"
+
+
+def pdf_to_index_path(app_dir: Path, input_pdf_path: Path) -> Path:
+    pdf_file_name = input_pdf_path.stem
+    output_dir = app_dir / "OutputDir/dr-doc-search" / pdf_file_name / "index"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    return output_dir / "docsearch.index"
 
 
 class VerifyInputFile(WorkflowBase):
@@ -120,11 +139,8 @@ class CreateIndex(WorkflowBase):
         docsearch.from_texts([text], embeddings)
 
     def execute(self) -> dict:
-        pdf_file_name = self.input_pdf_path.stem
-        output_dir = self.app_dir / "OutputDir/dr-doc-search" / pdf_file_name / "index"
-        output_dir.mkdir(parents=True, exist_ok=True)
-        faiss_db = output_dir / "index.pkl"
-        index_path = output_dir / "docsearch.index"
+        faiss_db = pdf_to_faiss_db_path(self.app_dir, self.input_pdf_path)
+        index_path = pdf_to_index_path(self.app_dir, self.input_pdf_path)
 
         if not self.overwrite_index and faiss_db.exists():
             logging.info("Index already exists at %s", faiss_db)
@@ -161,6 +177,7 @@ class LoadIndex(WorkflowBase):
         if not self.faiss_db.exists():
             raise FileNotFoundError(f"FAISS DB file not found: {self.faiss_db}")
 
+        print(f"[bold]Loading[/bold] index from {self.faiss_db}")
         index = faiss.read_index(self.index_path.as_posix())
         with open(self.faiss_db, "rb") as f:
             search_index = pickle.load(f)
@@ -224,6 +241,25 @@ AI:"""
     @retry(exceptions=openai.error.RateLimitError, tries=2, delay=60, back_off=2)
     def send_prompt(self, prompt: str, qa: VectorDBQA) -> Any:
         return qa.run(prompt)
+
+
+# TODO: Only run when --train argument is passed from command line
+def training_workflow_steps() -> list:
+    return [
+        VerifyInputFile,
+        ConvertPDFToImages,
+        ConvertImagesToText,
+        CombineAllText,
+        CreateIndex,
+    ]
+
+
+def inference_workflow_steps() -> list:
+    return [
+        LoadIndex,
+        FindInterestingBlocks,
+        AskQuestion,
+    ]
 
 
 def workflow_steps() -> list:
