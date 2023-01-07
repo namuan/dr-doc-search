@@ -1,3 +1,15 @@
+## 1.1.0 (2023-01-07)
+
+### Feat
+
+- #2 Provide option to just create a model for provided book
+- #1 WebUI using Holoviz Panel framework
+
+### Refactor
+
+- Cleanup
+- Combine workflow steps in a single file to make it easy to port to other projects
+
 ## 1.0.1 (2023-01-06)
 
 ### Fix
