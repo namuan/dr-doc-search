@@ -6,7 +6,7 @@
 
 Converse with a book (PDF)
 
-![](docs/dr-doc-search-github-demo.gif)
+![](assets/dr-doc-search-github-demo.gif)
 
 See [tweet](https://twitter.com/deskriders_twt/status/1612088387984588802) for full demo.
 

@@ -1,5 +1,5 @@
-site_name: Twitter tools - Collection of twitter utilities.
-repo_url: https://github.com/namuan/twitter-utils
+site_name: Doc Search - Converse with a book (PDF)
+repo_url: https://github.com/namuan/dr-doc-search
 
 theme:
   name: material
@@ -23,3 +23,12 @@ markdown_extensions:
 
 plugins:
   - search:
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          rendering:
+            show_signature_annotations: true
+            show_source: true
+      watch:
+        - src/doc_search

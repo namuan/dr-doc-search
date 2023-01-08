@@ -16,8 +16,8 @@
 
 ### Feat
 
-- #2 Provide option to just create a model for provided book
-- #1 WebUI using Holoviz Panel framework
+- Provide option to just create a model for provided book
+- WebUI using Holoviz Panel framework
 
 ### Refactor
 
