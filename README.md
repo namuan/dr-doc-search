@@ -96,6 +96,13 @@ See the help for more details:
 dr-doc-search --help
 ```
 
+## Acknowledgements
+
+- [anton/@abacaj](https://twitter.com/abacaj/status/1608163940726358024) for the idea
+- [LangChain](https://github.com/hwchase17/langchain)
+- [HoloViz Panel](https://panel.holoviz.org/)
+- [OpenAI](https://beta.openai.com/)
+
 ## Development
 
 * Clone this repository
@@ -122,3 +129,8 @@ make build
 A release is automatically published when a new version is bumped using `make bump`.
 See `.github/workflows/build.yml` for more details.
 Once the release is published, `.github/workflows/publish.yml` will automatically publish it to PyPI.
+
+### Disclaimer
+
+This project is not affiliated with OpenAI.
+The OpenAI API and GPT-3 language model are not free after the trial period.
