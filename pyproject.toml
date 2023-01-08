@@ -41,6 +41,7 @@ faiss-cpu = "^1.7.3"
 python-dotenv = "^0.21.0"
 panel = "^0.14.2"
 slug = "^2.0"
+sentence-transformers = "^2.2.2"
 
 [tool.poetry.group.dev.dependencies]
 autoflake = "*"

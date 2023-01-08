@@ -7,6 +7,9 @@ from typing import Any
 import faiss  # type: ignore
 import openai
 from langchain import OpenAI, VectorDBQA
+from langchain.embeddings import HuggingFaceEmbeddings, HuggingFaceHubEmbeddings
+from langchain.embeddings.base import Embeddings
+from langchain.embeddings.cohere import CohereEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.prompts import PromptTemplate
 from langchain.text_splitter import CharacterTextSplitter
@@ -158,10 +161,21 @@ class CreateIndex(WorkflowBase):
     app_dir: Path
     overwrite_index: bool
     chunked_text_list: list[str]
+    embedding: str
 
     @retry(exceptions=openai.error.RateLimitError, tries=2, delay=60, back_off=2)
-    def append_to_index(self, docsearch: FAISS, text: str, embeddings: OpenAIEmbeddings) -> None:
+    def append_to_index(self, docsearch: FAISS, text: str, embeddings: Embeddings) -> None:
         docsearch.from_texts([text], embeddings)
+
+    def embedding_from_selection(self) -> Embeddings:
+        if self.embedding == "huggingface":
+            return HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+        elif self.embedding == "huggingface-hub":
+            return HuggingFaceHubEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+        elif self.embedding == "cohere":
+            return CohereEmbeddings()
+        else:
+            return OpenAIEmbeddings()
 
     def execute(self) -> dict:
         faiss_db = pdf_to_faiss_db_path(self.app_dir, self.input_pdf_path)
@@ -178,7 +192,7 @@ class CreateIndex(WorkflowBase):
                 faiss_db.exists(),
             )
 
-        embeddings = OpenAIEmbeddings()
+        embeddings = self.embedding_from_selection()
         docsearch: FAISS = FAISS.from_texts(self.chunked_text_list[:2], embeddings)
         for text in self.chunked_text_list[2:]:
             self.append_to_index(docsearch, text, embeddings)

@@ -32,6 +32,13 @@ def parse_args() -> Namespace:
     parser.add_argument("-t", "--train", action="store_true", help="Train and index the PDF file")
     parser.add_argument("-a", "--web-app", action="store_true", help="Start WebApp")
     parser.add_argument("-p", "--pre-process", action="store_true", help="Extract text from PDF file")
+    parser.add_argument(
+        "-b",
+        "--embedding",
+        choices=["openai", "huggingface", "huggingface-hub", "cohere"],
+        default="openai",
+        help="Embedding to use",
+    )
 
     parser.add_argument(
         "-v",
