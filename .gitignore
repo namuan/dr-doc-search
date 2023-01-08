@@ -84,3 +84,4 @@ geckodriver.log
 backroom/
 .temp/
 **/OutputDir/**/*.*
+.DS_Store
