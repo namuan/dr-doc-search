@@ -258,6 +258,14 @@ def training_workflow_steps() -> list:
     ]
 
 
+def pre_process_workflow_steps() -> list:
+    return [
+        VerifyInputFile,
+        ConvertPDFToImages,
+        ConvertImagesToText,
+    ]
+
+
 def inference_workflow_steps() -> list:
     return [
         LoadIndex,
