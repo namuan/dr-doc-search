@@ -4,6 +4,7 @@ repos:
     hooks:
       - id: check-ast
       - id: check-added-large-files
+        exclude: "^docs/dr-doc-search-github-demo.gif"
       - id: check-merge-conflict
       - id: check-case-conflict
       - id: check-docstring-first

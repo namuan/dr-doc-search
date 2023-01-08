@@ -1,5 +1,6 @@
 """
-Indexes a PDF file and generate OpenAI Embeddings
+Indexes a PDF file and generate OpenAI Embeddings.
+Also allow user to ask question using the command line interface or the web app.
 """
 from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
 from pathlib import Path
