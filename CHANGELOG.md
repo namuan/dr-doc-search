@@ -1,3 +1,14 @@
+## 1.3.0 (2023-01-08)
+
+### Feat
+
+- Add support for huggingface embedding and allow user to select a different embedding provider from OpenAI
+- Add an option to pre-process a PDF file
+
+### Fix
+
+- Update Changelog and remove # used for GH issues
+
 ## 1.2.0 (2023-01-07)
 
 ### Feat
