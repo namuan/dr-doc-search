@@ -1,4 +1,5 @@
 import logging
+from operator import itemgetter
 from typing import Any
 
 import panel
@@ -16,8 +17,7 @@ pn.extension(loading_spinner="dots", loading_color="#00aa41")
 
 inp = pn.widgets.TextInput(value="", placeholder="Enter text here...")
 button_conversation = pn.widgets.Button(name="Ask me something!")
-convos_text = []  # store all texts in a list
-convos = []  # store all panel objects in a list
+convos: list[Any] = []  # store all panel objects in a list
 global_context = {}  # store workflow context
 
 
@@ -26,15 +26,18 @@ def get_conversations(_: Any) -> pn.Column:
     logging.info("Getting conversation for prompt: %s for input %s", prompt, inp)
     if prompt != "":
         input_question = global_context["input_question"] = prompt
-        convos_text.append(input_question)
         run_workflow(global_context, inference_workflow_steps())
-        openai_answer = global_context["output"]
-        logging.info("Answer: %s", openai_answer)
-        convos_text.append(openai_answer)
-        convos.append(pn.Row("🙂", pn.pane.Markdown(f"**{prompt}**", width=600)))
-        convos.append(pn.Row("📖", pn.pane.Markdown(openai_answer, width=600, style={"background-color": "#F6F6F6"})))
+        render_answer(input_question, global_context)
     inp.value_input = ""
     return pn.Column(*convos)
+
+
+def render_answer(input_question: str, context: dict) -> None:
+    output_text, sources = itemgetter("output", "sources")(context)
+    logging.info("Answer: %s, Sources: %s", output_text, sources)
+    convos.append(pn.Row("🙂", pn.pane.Markdown(f"**{input_question}**", width=600)))
+    convos.append(pn.Row("📖", pn.pane.Markdown(output_text, width=600, style={"background-color": "#F6F6F6"})))
+    convos.append(pn.Row("📜", pn.pane.Markdown(sources, width=600, style={"background-color": "#F6F6F6"})))
 
 
 def run_inference_workflow(context: dict) -> None:
@@ -57,12 +60,7 @@ def run_web(context: dict) -> None:
     )
 
     run_workflow(global_context, inference_workflow_steps())
-
-    convos.append(pn.Row("📖", pn.pane.Markdown("**Here is the book summary**", width=600)))
-    convos.append(
-        pn.Row("📖", pn.pane.Markdown(global_context["output"], width=600, style={"background-color": "#F6F6F6"}))
-    )
-
+    render_answer("**Here is the book summary**", global_context)
     dashboard = pn.Column(
         inp,
         pn.Row(button_conversation),

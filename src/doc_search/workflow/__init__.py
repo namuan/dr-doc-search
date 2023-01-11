@@ -7,16 +7,17 @@ from typing import Any
 import faiss  # type: ignore
 import openai
 from langchain import OpenAI, VectorDBQA
+from langchain.chains.qa_with_sources import load_qa_with_sources_chain
+from langchain.docstore.document import Document
 from langchain.embeddings import HuggingFaceEmbeddings, HuggingFaceHubEmbeddings
 from langchain.embeddings.base import Embeddings
 from langchain.embeddings.cohere import CohereEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.prompts import PromptTemplate
 from langchain.text_splitter import CharacterTextSplitter
+from langchain.vectorstores import VectorStore
 from langchain.vectorstores.faiss import FAISS
 from py_executable_checklist.workflow import WorkflowBase, run_command
 from pypdf import PdfReader
-from rich import print
 from slug import slug  # type: ignore
 
 from doc_search import retry
@@ -101,7 +102,7 @@ class ConvertPDFToImages(WorkflowBase):
             image_path = output_dir / f"output-{i}.png"
             if image_path.exists():
                 continue
-            convert_command = f"""convert -density 150 -trim -background white -alpha remove -quality 100 -sharpen 0x1.0 {input_file_page} -quality 100 {image_path}"""
+            convert_command = f"""convert -density 150 -background white -alpha remove -quality 100 -sharpen 0x1.0 {input_file_page} -quality 100 {image_path}"""
             run_command(convert_command)
 
         return {"pdf_images_path": output_dir}
@@ -138,18 +139,24 @@ class CombineAllText(WorkflowBase):
     """
 
     pages_text_path: Path
+    pdf_images_path: Path
+
+    def image_path_from_text_path(self, text_path: Path) -> Path:
+        return self.pdf_images_path.joinpath(text_path.stem).with_suffix(".png")
 
     def execute(self) -> dict:
-        text = ""
-        for file in self.pages_text_path.glob("*.txt"):
-            text += file.read_text()
-
+        source_chunks = []
         text_splitter = CharacterTextSplitter(chunk_size=2000, chunk_overlap=0)
-        texts = text_splitter.split_text(text)
 
-        return {
-            "chunked_text_list": texts,
-        }
+        for text_path in self.pages_text_path.glob("*.txt"):
+            with open(text_path) as f:
+                for text in text_splitter.split_text(f.read()):
+                    if text:
+                        source_chunks.append(
+                            Document(page_content=text, metadata={"source": self.image_path_from_text_path(text_path)})
+                        )
+
+        return {"text_chunks": source_chunks}
 
 
 class CreateIndex(WorkflowBase):
@@ -160,13 +167,14 @@ class CreateIndex(WorkflowBase):
     input_pdf_path: Path
     app_dir: Path
     overwrite_index: bool
-    chunked_text_list: list[str]
+    text_chunks: list[Document]
     embedding: str
 
     @retry(exceptions=openai.error.RateLimitError, tries=2, delay=60, back_off=2)
-    def append_to_index(self, docsearch: FAISS, text: str, embeddings: Embeddings) -> None:
-        docsearch.from_texts([text], embeddings)
+    def append_to_index(self, docsearch: VectorStore, doc: Document, embeddings: Embeddings) -> None:
+        docsearch.from_documents([doc], embeddings)
 
+    # TODO: Extract as a separate step
     def embedding_from_selection(self) -> Embeddings:
         if self.embedding == "huggingface":
             return HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
@@ -193,9 +201,9 @@ class CreateIndex(WorkflowBase):
             )
 
         embeddings = self.embedding_from_selection()
-        docsearch: FAISS = FAISS.from_texts(self.chunked_text_list[:2], embeddings)
-        for text in self.chunked_text_list[2:]:
-            self.append_to_index(docsearch, text, embeddings)
+        docsearch: Any = FAISS.from_documents(self.text_chunks[:2], embeddings)
+        for chunk in self.text_chunks[2:]:
+            self.append_to_index(docsearch, chunk, embeddings)
 
         faiss.write_index(docsearch.index, index_path.as_posix())
         with open(faiss_db, "wb") as f:
@@ -216,7 +224,6 @@ class LoadIndex(WorkflowBase):
         if not self.faiss_db.exists():
             raise FileNotFoundError(f"FAISS DB file not found: {self.faiss_db}")
 
-        print(f"[bold]Loading[/bold] index from {self.faiss_db}")
         index = faiss.read_index(self.index_path.as_posix())
         with open(self.faiss_db, "rb") as f:
             search_index = pickle.load(f)
@@ -233,29 +240,20 @@ class AskQuestion(WorkflowBase):
     input_question: str
     search_index: Any
 
-    def prompt_from_question(self) -> PromptTemplate:
-        template = """
-Instructions:
-- You are a text based search engine
-- Provide keywords and summary which should be relevant to answer the question.
-- Provide detailed responses that relate to the humans prompt.
-- If there is a code block in the answer then wrap it in triple backticks.
-- Also tag the code block with the language name.
-
-{context}
-
-- Human:
-${question}
-
-- You:"""
-
-        return PromptTemplate(input_variables=["context", "question"], template=template)
-
     def execute(self) -> dict:
-        prompt = self.prompt_from_question()
-        qa = VectorDBQA.from_llm(llm=OpenAI(), prompt=prompt, vectorstore=self.search_index)
-        output = self.send_prompt(qa, self.input_question)
-        return {"output": output}
+        prompt = self.input_question + "\nIf there is a code block in the answer then wrap it in triple backticks."
+        chain = load_qa_with_sources_chain(llm=OpenAI())
+        input_documents = self.search_index.similarity_search(self.input_question)
+        logging.info("Found %s documents", len(input_documents))
+        logging.info("Documents: %s", input_documents)
+        output = chain(
+            {
+                "input_documents": input_documents,
+                "question": prompt,
+            }
+        )
+        output_text, sources = output["output_text"].split("SOURCES:")
+        return {"output": output_text, "sources": sources}
 
     @retry(exceptions=openai.error.RateLimitError, tries=2, delay=60, back_off=2)
     def send_prompt(self, qa: VectorDBQA, input_question: str) -> Any:

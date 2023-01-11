@@ -3,6 +3,7 @@ Indexes a PDF file and generate OpenAI Embeddings.
 Also allow user to ask question using the command line interface or the web app.
 """
 from argparse import ArgumentParser, Namespace, RawDescriptionHelpFormatter
+from operator import itemgetter
 from pathlib import Path
 
 from py_executable_checklist.workflow import run_workflow
@@ -63,8 +64,10 @@ def main() -> None:  # pragma: no cover
         run_workflow(context, pre_process_workflow_steps())
     else:
         run_workflow(context, workflow_steps())
+        output_text, sources = itemgetter("output", "sources")(context)
         print("[bold]Question: " + context["input_question"] + "[/bold]")
-        print("[blue]Answer: " + context["output"] + "[/blue]")
+        print("[blue]Answer: " + output_text + "[/blue]")
+        print("[blue]Sources: " + sources + "[/blue]")
 
 
 if __name__ == "__main__":  # pragma: no cover
