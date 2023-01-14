@@ -32,9 +32,25 @@ def get_conversations(_: Any) -> pn.Column:
         logging.info("Answer: %s", openai_answer)
         convos_text.append(openai_answer)
         convos.append(pn.Row("🙂", pn.pane.Markdown(f"**{prompt}**", width=600)))
-        convos.append(pn.Row("📖", pn.pane.Markdown(openai_answer, width=600, style={"background-color": "#F6F6F6"})))
+        render_answer(openai_answer)
     inp.value_input = ""
     return pn.Column(*convos)
+
+
+def render_answer(openai_answer: str) -> None:
+    convos.append(
+        pn.Row(
+            "📖",
+            pn.pane.Markdown(
+                openai_answer,
+                width=600,
+                style={
+                    "background-color": "#F6F6F6",
+                    "line-height": "1.5",
+                },
+            ),
+        )
+    )
 
 
 def run_inference_workflow(context: dict) -> None:
@@ -59,9 +75,7 @@ def run_web(context: dict) -> None:
     run_workflow(global_context, inference_workflow_steps())
 
     convos.append(pn.Row("📖", pn.pane.Markdown("**Here is the book summary**", width=600)))
-    convos.append(
-        pn.Row("📖", pn.pane.Markdown(global_context["output"], width=600, style={"background-color": "#F6F6F6"}))
-    )
+    render_answer(global_context["output"])
 
     dashboard = pn.Column(
         inp,
