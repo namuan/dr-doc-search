@@ -1,3 +1,9 @@
+## 1.4.1 (2023-01-14)
+
+### Fix
+
+- Ignore empty text chunk as it'll cause error later
+
 ## 1.4.0 (2023-01-14)
 
 ### Feat
