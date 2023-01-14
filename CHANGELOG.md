@@ -1,3 +1,10 @@
+## 1.4.0 (2023-01-14)
+
+### Feat
+
+- Minor improvements in usability
+- Add line-height when displaying answers
+
 ## 1.3.0 (2023-01-08)
 
 ### Feat
