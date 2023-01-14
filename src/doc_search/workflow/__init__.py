@@ -148,7 +148,7 @@ class CombineAllText(WorkflowBase):
         texts = text_splitter.split_text(text)
 
         return {
-            "chunked_text_list": texts,
+            "chunked_text_list": [t for t in texts if t],
         }
 
 
