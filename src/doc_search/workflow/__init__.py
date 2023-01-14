@@ -47,14 +47,14 @@ def copy_raw_pdf_file(app_dir: Path, input_pdf_path: Path) -> Path:
     return new_input_pdf_path
 
 
-def pdf_to_faiss_db_path(app_dir: Path, input_pdf_path: Path) -> Path:
-    output_dir = output_directory_for_pdf(app_dir, input_pdf_path) / "index"
+def pdf_to_faiss_db_path(app_dir: Path, input_pdf_path: Path, index_prefix_name: str) -> Path:
+    output_dir = output_directory_for_pdf(app_dir, input_pdf_path) / f"{index_prefix_name}-index"
     output_dir.mkdir(parents=True, exist_ok=True)
     return output_dir / "index.pkl"
 
 
-def pdf_to_index_path(app_dir: Path, input_pdf_path: Path) -> Path:
-    output_dir = output_directory_for_pdf(app_dir, input_pdf_path) / "index"
+def pdf_to_index_path(app_dir: Path, input_pdf_path: Path, index_prefix_name: str) -> Path:
+    output_dir = output_directory_for_pdf(app_dir, input_pdf_path) / f"{index_prefix_name}-index"
     output_dir.mkdir(parents=True, exist_ok=True)
     return output_dir / "docsearch.index"
 
@@ -160,6 +160,26 @@ class CombineAllText(WorkflowBase):
         return {"text_chunks": source_chunks}
 
 
+class EmbeddingFromInput(WorkflowBase):
+    """
+    Select the embedding model from the given input
+    """
+
+    embedding: str
+
+    def execute(self) -> dict:
+        embedding_api: Embeddings = OpenAIEmbeddings()
+
+        if self.embedding == "huggingface":
+            embedding_api = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+        elif self.embedding == "huggingface-hub":
+            embedding_api = HuggingFaceHubEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+        elif self.embedding == "cohere":
+            embedding_api = CohereEmbeddings()
+
+        return {"embedding_api": embedding_api}
+
+
 class CreateIndex(WorkflowBase):
     """
     Create index for embedding search
@@ -169,26 +189,16 @@ class CreateIndex(WorkflowBase):
     app_dir: Path
     overwrite_index: bool
     text_chunks: list[Document]
+    embedding_api: Embeddings
     embedding: str
 
     @retry(exceptions=openai.error.RateLimitError, tries=2, delay=60, back_off=2)
     def append_to_index(self, docsearch: VectorStore, doc: Document, embeddings: Embeddings) -> None:
         docsearch.from_documents([doc], embeddings)
 
-    # TODO: Extract as a separate step
-    def embedding_from_selection(self) -> Embeddings:
-        if self.embedding == "huggingface":
-            return HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
-        elif self.embedding == "huggingface-hub":
-            return HuggingFaceHubEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
-        elif self.embedding == "cohere":
-            return CohereEmbeddings()
-        else:
-            return OpenAIEmbeddings()
-
     def execute(self) -> dict:
-        faiss_db = pdf_to_faiss_db_path(self.app_dir, self.input_pdf_path)
-        index_path = pdf_to_index_path(self.app_dir, self.input_pdf_path)
+        faiss_db = pdf_to_faiss_db_path(self.app_dir, self.input_pdf_path, self.embedding)
+        index_path = pdf_to_index_path(self.app_dir, self.input_pdf_path, self.embedding)
 
         if not self.overwrite_index and faiss_db.exists():
             logging.info("Index already exists at %s", faiss_db)
@@ -201,7 +211,7 @@ class CreateIndex(WorkflowBase):
                 faiss_db.exists(),
             )
 
-        embeddings = self.embedding_from_selection()
+        embeddings = self.embedding_api
         docsearch: Any = FAISS.from_documents(self.text_chunks[:2], embeddings)
         for chunk in self.text_chunks[2:]:
             self.append_to_index(docsearch, chunk, embeddings)
@@ -233,13 +243,31 @@ class LoadIndex(WorkflowBase):
         return {"search_index": search_index}
 
 
+class FindInputDocuments(WorkflowBase):
+    """
+    Find input documents by looking at the search index
+    """
+
+    search_index: Any
+    input_question: str
+
+    def execute(self) -> dict:
+        input_documents = self.search_index.similarity_search(self.input_question, k=5)
+        logging.info("Found %s documents", len(input_documents))
+        for doc in input_documents:
+            logging.info("📋 Found document %s", doc)
+
+        # output
+        return {"input_documents": input_documents}
+
+
 class AskQuestion(WorkflowBase):
     """
     Ask question by sending prompt along with indexed data
     """
 
     input_question: str
-    search_index: Any
+    input_documents: list[Any]
     verbose: int
 
     def prompt_from_question(self) -> PromptTemplate:
@@ -266,12 +294,9 @@ ANSWER:"""
     def execute(self) -> dict:
         question = self.input_question
         chain = load_qa_with_sources_chain(llm=OpenAI(), prompt=self.prompt_from_question(), verbose=self.verbose >= 1)
-        input_documents = self.search_index.similarity_search(question)
-        logging.info("Found %s documents", len(input_documents))
-        logging.info("Documents: %s", input_documents)
         output = chain(
             {
-                "input_documents": input_documents,
+                "input_documents": self.input_documents,
                 "question": question,
             }
         )
@@ -289,7 +314,15 @@ def training_workflow_steps() -> list:
         ConvertPDFToImages,
         ConvertImagesToText,
         CombineAllText,
+        EmbeddingFromInput,
         CreateIndex,
+    ]
+
+
+def find_input_documents_workflow() -> list:
+    return [
+        LoadIndex,
+        FindInputDocuments,
     ]
 
 
@@ -304,6 +337,7 @@ def pre_process_workflow_steps() -> list:
 def inference_workflow_steps() -> list:
     return [
         LoadIndex,
+        FindInputDocuments,
         AskQuestion,
     ]
 

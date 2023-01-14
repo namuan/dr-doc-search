@@ -12,6 +12,9 @@ from rich import print
 from doc_search import setup_logging
 from doc_search.web import run_web
 from doc_search.workflow import (
+    find_input_documents_workflow,
+    pdf_to_faiss_db_path,
+    pdf_to_index_path,
     pre_process_workflow_steps,
     training_workflow_steps,
     workflow_steps,
@@ -30,6 +33,9 @@ def parse_args() -> Namespace:
         "-q", "--input-question", default="Can you provide a summary of the context?", help="Question to ask"
     )
     parser.add_argument("-w", "--overwrite-index", action="store_true", help="Overwrite existing index")
+    parser.add_argument(
+        "-f", "--find-input-documents", action="store_true", help="Load index and find similar documents"
+    )
     parser.add_argument("-t", "--train", action="store_true", help="Train and index the PDF file")
     parser.add_argument("-a", "--web-app", action="store_true", help="Start WebApp")
     parser.add_argument("-p", "--pre-process", action="store_true", help="Extract text from PDF file")
@@ -58,6 +64,10 @@ def main() -> None:  # pragma: no cover
     context = args.__dict__
     if args.web_app:
         run_web(context)
+    elif args.find_input_documents:
+        context["index_path"] = pdf_to_index_path(context["app_dir"], context["input_pdf_path"], context["embedding"])
+        context["faiss_db"] = pdf_to_faiss_db_path(context["app_dir"], context["input_pdf_path"], context["embedding"])
+        run_workflow(context, find_input_documents_workflow())
     elif args.train:
         run_workflow(context, training_workflow_steps())
     elif args.pre_process:

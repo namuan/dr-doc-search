@@ -46,8 +46,8 @@ def run_inference_workflow(context: dict) -> None:
 
 def run_web(context: dict) -> None:
     global global_context
-    context["index_path"] = pdf_to_index_path(context["app_dir"], context["input_pdf_path"])
-    context["faiss_db"] = pdf_to_faiss_db_path(context["app_dir"], context["input_pdf_path"])
+    context["index_path"] = pdf_to_index_path(context["app_dir"], context["input_pdf_path"], context["embedding"])
+    context["faiss_db"] = pdf_to_faiss_db_path(context["app_dir"], context["input_pdf_path"], context["embedding"])
     global_context = context
     interactive_conversation = pn.bind(get_conversations, button_conversation)
 
