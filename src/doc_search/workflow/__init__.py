@@ -13,6 +13,7 @@ from langchain.embeddings import HuggingFaceEmbeddings, HuggingFaceHubEmbeddings
 from langchain.embeddings.base import Embeddings
 from langchain.embeddings.cohere import CohereEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.prompts import PromptTemplate
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores import VectorStore
 from langchain.vectorstores.faiss import FAISS
@@ -239,17 +240,39 @@ class AskQuestion(WorkflowBase):
 
     input_question: str
     search_index: Any
+    verbose: int
+
+    def prompt_from_question(self) -> PromptTemplate:
+        template = """
+Instructions:
+- You are a text based search engine
+- Provide keywords and summary which should be relevant to answer the question.
+- Provide detailed responses that relate to the humans prompt.
+- If there is a code block in the answer then wrap it in triple backticks.
+- Also tag the code block with the language name.
+- ALWAYS return a "SOURCES" part in your answer.
+
+SOURCES:
+
+QUESTION: {question}
+=========
+
+{summaries}
+
+ANSWER:"""
+
+        return PromptTemplate(input_variables=["summaries", "question"], template=template)
 
     def execute(self) -> dict:
-        prompt = self.input_question + "\nIf there is a code block in the answer then wrap it in triple backticks."
-        chain = load_qa_with_sources_chain(llm=OpenAI())
-        input_documents = self.search_index.similarity_search(self.input_question)
+        question = self.input_question
+        chain = load_qa_with_sources_chain(llm=OpenAI(), prompt=self.prompt_from_question(), verbose=self.verbose >= 1)
+        input_documents = self.search_index.similarity_search(question)
         logging.info("Found %s documents", len(input_documents))
         logging.info("Documents: %s", input_documents)
         output = chain(
             {
                 "input_documents": input_documents,
-                "question": prompt,
+                "question": question,
             }
         )
         output_text, sources = output["output_text"].split("SOURCES:")
