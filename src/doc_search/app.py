@@ -13,8 +13,6 @@ from doc_search import setup_logging
 from doc_search.web import run_web
 from doc_search.workflow import (
     find_input_documents_workflow,
-    pdf_to_faiss_db_path,
-    pdf_to_index_path,
     pre_process_workflow_steps,
     training_workflow_steps,
     workflow_steps,
@@ -46,6 +44,11 @@ def parse_args() -> Namespace:
         default="openai",
         help="Embedding to use",
     )
+    parser.add_argument(
+        "--hugging-face-model",
+        default="sentence-transformers/all-mpnet-base-v2",
+        help="HuggingFace model to use",
+    )
 
     parser.add_argument(
         "-v",
@@ -65,8 +68,6 @@ def main() -> None:  # pragma: no cover
     if args.web_app:
         run_web(context)
     elif args.find_input_documents:
-        context["index_path"] = pdf_to_index_path(context["app_dir"], context["input_pdf_path"], context["embedding"])
-        context["faiss_db"] = pdf_to_faiss_db_path(context["app_dir"], context["input_pdf_path"], context["embedding"])
         run_workflow(context, find_input_documents_workflow())
     elif args.train:
         run_workflow(context, training_workflow_steps())

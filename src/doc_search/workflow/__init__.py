@@ -166,18 +166,22 @@ class EmbeddingFromInput(WorkflowBase):
     """
 
     embedding: str
+    hugging_face_model: str
 
     def execute(self) -> dict:
         embedding_api: Embeddings = OpenAIEmbeddings()
+        index_prefix = self.embedding
 
         if self.embedding == "huggingface":
-            embedding_api = HuggingFaceEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+            embedding_api = HuggingFaceEmbeddings(model_name=self.hugging_face_model)
+            index_prefix = f"{self.embedding}-{slug(self.hugging_face_model)}"
         elif self.embedding == "huggingface-hub":
-            embedding_api = HuggingFaceHubEmbeddings(model_name="sentence-transformers/all-mpnet-base-v2")
+            embedding_api = HuggingFaceHubEmbeddings(model_name=self.hugging_face_model)
+            index_prefix = f"{self.embedding}-{slug(self.hugging_face_model)}"
         elif self.embedding == "cohere":
             embedding_api = CohereEmbeddings()
 
-        return {"embedding_api": embedding_api}
+        return {"embedding_api": embedding_api, "index_prefix": index_prefix}
 
 
 class CreateIndex(WorkflowBase):
@@ -190,15 +194,15 @@ class CreateIndex(WorkflowBase):
     overwrite_index: bool
     text_chunks: list[Document]
     embedding_api: Embeddings
-    embedding: str
+    index_prefix: str
 
     @retry(exceptions=openai.error.RateLimitError, tries=2, delay=60, back_off=2)
     def append_to_index(self, docsearch: VectorStore, doc: Document, embeddings: Embeddings) -> None:
         docsearch.from_documents([doc], embeddings)
 
     def execute(self) -> dict:
-        faiss_db = pdf_to_faiss_db_path(self.app_dir, self.input_pdf_path, self.embedding)
-        index_path = pdf_to_index_path(self.app_dir, self.input_pdf_path, self.embedding)
+        faiss_db = pdf_to_faiss_db_path(self.app_dir, self.input_pdf_path, self.index_prefix)
+        index_path = pdf_to_index_path(self.app_dir, self.input_pdf_path, self.index_prefix)
 
         if not self.overwrite_index and faiss_db.exists():
             logging.info("Index already exists at %s", faiss_db)
@@ -234,6 +238,8 @@ class LoadIndex(WorkflowBase):
     def execute(self) -> dict:
         if not self.faiss_db.exists():
             raise FileNotFoundError(f"FAISS DB file not found: {self.faiss_db}")
+        else:
+            logging.info("Loading index from %s", self.faiss_db)
 
         index = faiss.read_index(self.index_path.as_posix())
         with open(self.faiss_db, "rb") as f:
@@ -276,7 +282,7 @@ Instructions:
 - You are a text based search engine
 - Provide keywords and summary which should be relevant to answer the question.
 - Provide detailed responses that relate to the humans prompt.
-- If there is a code block in the answer then wrap it in triple backticks.
+- If there is a code block in the answer then enclose it in triple backticks.
 - Also tag the code block with the language name.
 - ALWAYS return a "SOURCES" part in your answer.
 
@@ -300,7 +306,7 @@ ANSWER:"""
                 "question": question,
             }
         )
-        output_text, sources = output["output_text"].split("SOURCES:")
+        output_text, *sources = output["output_text"].split("SOURCES:")
         return {"output": output_text, "sources": sources}
 
     @retry(exceptions=openai.error.RateLimitError, tries=2, delay=60, back_off=2)
@@ -320,7 +326,7 @@ def training_workflow_steps() -> list:
 
 
 def find_input_documents_workflow() -> list:
-    return [
+    return training_workflow_steps() + [
         LoadIndex,
         FindInputDocuments,
     ]
