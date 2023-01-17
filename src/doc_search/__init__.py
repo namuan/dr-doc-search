@@ -12,10 +12,10 @@ load_dotenv()
 
 openai.api_key = os.getenv("OPENAI_API_KEY")
 openai.debug = False
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def setup_logging(verbosity: int) -> None:
-
     logging_level = logging.WARNING
     if verbosity == 1:
         logging_level = logging.INFO

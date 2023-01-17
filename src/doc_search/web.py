@@ -37,7 +37,8 @@ def render_answer(input_question: str, context: dict) -> None:
     logging.info("Answer: %s, Sources: %s", output_text, sources)
     convos.append(pn.Row("🙂", pn.pane.Markdown(f"**{input_question}**", width=600)))
     convos.append(pn.Row("📖", pn.pane.Markdown(output_text, width=600, style={"background-color": "#F6F6F6"})))
-    convos.append(pn.Row("📜", pn.pane.Markdown(*sources, width=600, style={"background-color": "#F6F6F6"})))
+    source_images = [source.as_posix() for source in sources]
+    convos.append(pn.Row("📜", pn.pane.Markdown("  ".join(source_images), width=600)))
 
 
 def run_inference_workflow(context: dict) -> None:

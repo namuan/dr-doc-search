@@ -19,6 +19,7 @@ from langchain.vectorstores import VectorStore
 from langchain.vectorstores.faiss import FAISS
 from py_executable_checklist.workflow import WorkflowBase, run_command
 from pypdf import PdfReader
+from rich import print
 from slug import slug  # type: ignore
 
 from doc_search import retry
@@ -197,8 +198,8 @@ class CreateIndex(WorkflowBase):
     index_prefix: str
 
     @retry(exceptions=openai.error.RateLimitError, tries=2, delay=60, back_off=2)
-    def append_to_index(self, docsearch: VectorStore, doc: Document, embeddings: Embeddings) -> None:
-        docsearch.from_documents([doc], embeddings)
+    def append_to_index(self, docsearch: VectorStore, doc: Document) -> None:
+        docsearch.add_texts([doc.page_content], metadatas=[doc.metadata])
 
     def execute(self) -> dict:
         faiss_db = pdf_to_faiss_db_path(self.app_dir, self.input_pdf_path, self.index_prefix)
@@ -216,9 +217,15 @@ class CreateIndex(WorkflowBase):
             )
 
         embeddings = self.embedding_api
-        docsearch: Any = FAISS.from_documents(self.text_chunks[:2], embeddings)
-        for chunk in self.text_chunks[2:]:
-            self.append_to_index(docsearch, chunk, embeddings)
+        if isinstance(embeddings, OpenAIEmbeddings):
+            docsearch: Any = FAISS.from_texts(
+                [self.text_chunks[0].page_content], embeddings, metadatas=[self.text_chunks[0].metadata]
+            )
+
+            for chunk in self.text_chunks[1:]:
+                self.append_to_index(docsearch, chunk)
+        else:
+            docsearch = FAISS.from_documents(self.text_chunks, embeddings)
 
         faiss.write_index(docsearch.index, index_path.as_posix())
         with open(faiss_db, "wb") as f:
@@ -258,10 +265,10 @@ class FindInputDocuments(WorkflowBase):
     input_question: str
 
     def execute(self) -> dict:
-        input_documents = self.search_index.similarity_search(self.input_question, k=5)
+        input_documents = self.search_index.similarity_search(self.input_question, k=4)
         logging.info("Found %s documents", len(input_documents))
         for doc in input_documents:
-            logging.info("📋 Found document %s", doc)
+            print(f"[bold]Source {doc.metadata['source']}[/bold]")
 
         # output
         return {"input_documents": input_documents}
@@ -279,14 +286,9 @@ class AskQuestion(WorkflowBase):
     def prompt_from_question(self) -> PromptTemplate:
         template = """
 Instructions:
-- You are a text based search engine
-- Provide keywords and summary which should be relevant to answer the question.
-- Provide detailed responses that relate to the humans prompt.
+- Provide detailed response that relate to the question.
 - If there is a code block in the answer then enclose it in triple backticks.
 - Also tag the code block with the language name.
-- ALWAYS return a "SOURCES" part in your answer.
-
-SOURCES:
 
 QUESTION: {question}
 =========
@@ -306,7 +308,8 @@ ANSWER:"""
                 "question": question,
             }
         )
-        output_text, *sources = output["output_text"].split("SOURCES:")
+        output_text = output["output_text"]
+        sources = [doc.metadata["source"] for doc in self.input_documents]
         return {"output": output_text, "sources": sources}
 
     @retry(exceptions=openai.error.RateLimitError, tries=2, delay=60, back_off=2)

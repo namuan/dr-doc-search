@@ -78,7 +78,8 @@ def main() -> None:  # pragma: no cover
         output_text, sources = itemgetter("output", "sources")(context)
         print("[bold]Question: " + context["input_question"] + "[/bold]")
         print("[blue]Answer: " + output_text + "[/blue]")
-        print("[blue]Sources: " + sources + "[/blue]")
+        for source in sources:
+            print("[red]Source: " + source + "[/red]")
 
 
 if __name__ == "__main__":  # pragma: no cover
