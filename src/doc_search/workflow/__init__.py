@@ -164,8 +164,8 @@ class CreateIndex(WorkflowBase):
     embedding: str
 
     @retry(exceptions=openai.error.RateLimitError, tries=2, delay=60, back_off=2)
-    def append_to_index(self, docsearch: FAISS, text: str, embeddings: Embeddings) -> None:
-        docsearch.from_texts([text], embeddings)
+    def append_to_index(self, docsearch: FAISS, text: str) -> None:
+        docsearch.add_texts([text])
 
     def embedding_from_selection(self) -> Embeddings:
         if self.embedding == "huggingface":
@@ -195,7 +195,7 @@ class CreateIndex(WorkflowBase):
         embeddings = self.embedding_from_selection()
         docsearch: FAISS = FAISS.from_texts(self.chunked_text_list[:2], embeddings)
         for text in self.chunked_text_list[2:]:
-            self.append_to_index(docsearch, text, embeddings)
+            self.append_to_index(docsearch, text)
 
         faiss.write_index(docsearch.index, index_path.as_posix())
         with open(faiss_db, "wb") as f:
