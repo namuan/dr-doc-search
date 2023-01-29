@@ -1,3 +1,10 @@
+## 1.5.1 (2023-01-29)
+
+### Fix
+
+- Fix broken indexing, only worked for first 2 text chunks @Klingefjord
+- Suppress warnings
+
 ## 1.5.0 (2023-01-29)
 
 ### Feat
