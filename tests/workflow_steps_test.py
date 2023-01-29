@@ -4,6 +4,7 @@ from doc_search.workflow import (
     ConvertImagesToText,
     ConvertPDFToImages,
     CreateIndex,
+    ImageMagickCommand,
     LoadIndex,
     VerifyInputFile,
     workflow_steps,
@@ -15,6 +16,7 @@ def test_return_expected_workflow() -> None:
 
     assert expected_workflow_steps == [
         VerifyInputFile,
+        ImageMagickCommand,
         ConvertPDFToImages,
         ConvertImagesToText,
         CombineAllText,

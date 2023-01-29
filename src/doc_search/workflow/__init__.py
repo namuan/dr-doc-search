@@ -1,8 +1,10 @@
 import logging
+import os
 import pickle
+import platform
 import shutil
 from pathlib import Path
-from typing import Any
+from typing import Any, Optional
 
 import faiss  # type: ignore
 import openai
@@ -82,11 +84,29 @@ class VerifyInputFile(WorkflowBase):
         }
 
 
+class ImageMagickCommand(WorkflowBase):
+    """
+    Use command based on OS
+    """
+
+    def execute(self) -> dict:
+        command: Optional[str] = "convert"
+
+        if platform.system() == "Windows":
+            command = os.getenv("IMCONV")
+            assert command is not None, (
+                "IMCONV environment variable not set. It should point to location of " "ImageMagick's convert.exe"
+            )
+
+        return {"convert_command": command}
+
+
 class ConvertPDFToImages(WorkflowBase):
     """
     Convert PDF to images using ImageMagick
     """
 
+    convert_command: str
     input_pdf_path: Path
     app_dir: Path
     start_page: int
@@ -101,7 +121,7 @@ class ConvertPDFToImages(WorkflowBase):
             image_path = output_dir / f"output-{i}.png"
             if image_path.exists():
                 continue
-            convert_command = f"""convert -density 150 -trim -background white -alpha remove -quality 100 -sharpen 0x1.0 {input_file_page} -quality 100 {image_path}"""
+            convert_command = f"""{self.convert_command} -density 150 -trim -background white -alpha remove -quality 100 -sharpen 0x1.0 {input_file_page} -quality 100 {image_path}"""
             run_command(convert_command)
 
         return {"pdf_images_path": output_dir}
@@ -265,6 +285,7 @@ ${question}
 def training_workflow_steps() -> list:
     return [
         VerifyInputFile,
+        ImageMagickCommand,
         ConvertPDFToImages,
         ConvertImagesToText,
         CombineAllText,
@@ -275,6 +296,7 @@ def training_workflow_steps() -> list:
 def pre_process_workflow_steps() -> list:
     return [
         VerifyInputFile,
+        ImageMagickCommand,
         ConvertPDFToImages,
         ConvertImagesToText,
     ]
