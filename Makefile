@@ -9,7 +9,7 @@ setup: ## Setup Virtual Env
 	poetry install
 
 deps: ## Install/Update dependencies
-	poetry lock
+	poetry update
 	poetry run pre-commit autoupdate
 
 local: ## Locally install the package
