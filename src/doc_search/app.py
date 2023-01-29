@@ -39,6 +39,13 @@ def parse_args() -> Namespace:
         default="openai",
         help="Embedding to use",
     )
+    parser.add_argument(
+        "-l",
+        "--llm",
+        choices=["openai", "huggingface"],
+        default="openai",
+        help="LLM to use",
+    )
 
     parser.add_argument(
         "-v",

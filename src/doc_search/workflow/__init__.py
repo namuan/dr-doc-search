@@ -6,11 +6,14 @@ from typing import Any
 
 import faiss  # type: ignore
 import openai
+import torch
 from langchain import OpenAI, VectorDBQA
 from langchain.embeddings import HuggingFaceEmbeddings, HuggingFaceHubEmbeddings
 from langchain.embeddings.base import Embeddings
 from langchain.embeddings.cohere import CohereEmbeddings
 from langchain.embeddings.openai import OpenAIEmbeddings
+from langchain.llms.base import BaseLLM
+from langchain.llms.huggingface_pipeline import HuggingFacePipeline
 from langchain.prompts import PromptTemplate
 from langchain.text_splitter import CharacterTextSplitter
 from langchain.vectorstores.faiss import FAISS
@@ -18,6 +21,7 @@ from py_executable_checklist.workflow import WorkflowBase, run_command
 from pypdf import PdfReader
 from rich import print
 from slug import slug  # type: ignore
+from transformers import pipeline  # type: ignore
 
 from doc_search import retry
 
@@ -144,7 +148,7 @@ class CombineAllText(WorkflowBase):
         for file in self.pages_text_path.glob("*.txt"):
             text += file.read_text()
 
-        text_splitter = CharacterTextSplitter(chunk_size=2000, chunk_overlap=0)
+        text_splitter = CharacterTextSplitter(chunk_size=1000, chunk_overlap=0)
         texts = text_splitter.split_text(text)
 
         return {
@@ -232,6 +236,7 @@ class AskQuestion(WorkflowBase):
 
     input_question: str
     search_index: Any
+    llm: str
 
     def prompt_from_question(self) -> PromptTemplate:
         template = """
@@ -251,9 +256,21 @@ ${question}
 
         return PromptTemplate(input_variables=["context", "question"], template=template)
 
+    def llm_provider(self) -> BaseLLM:
+        if self.llm == "huggingface":
+            pipe = pipeline(
+                "text2text-generation",
+                model="pszemraj/long-t5-tglobal-base-16384-book-summary",
+                device=0 if torch.cuda.is_available() else -1,
+            )
+            return HuggingFacePipeline(pipeline=pipe)
+        else:
+            return OpenAI()
+
     def execute(self) -> dict:
+        llm = self.llm_provider()
         prompt = self.prompt_from_question()
-        qa = VectorDBQA.from_llm(llm=OpenAI(), prompt=prompt, vectorstore=self.search_index)
+        qa = VectorDBQA.from_llm(llm=llm, prompt=prompt, vectorstore=self.search_index)
         output = self.send_prompt(qa, self.input_question)
         return {"output": output}
 
