@@ -1,6 +1,8 @@
 import logging
+import os
 import pickle
 import shutil
+import warnings
 from pathlib import Path
 from typing import Any
 
@@ -24,6 +26,9 @@ from slug import slug  # type: ignore
 from transformers import pipeline  # type: ignore
 
 from doc_search import retry
+
+warnings.filterwarnings("ignore", category=FutureWarning, module="transformers")
+os.environ["TOKENIZERS_PARALLELISM"] = "false"
 
 
 def slugify_pdf_name(input_pdf_path: Path) -> str:
@@ -241,7 +246,6 @@ class AskQuestion(WorkflowBase):
     def prompt_from_question(self) -> PromptTemplate:
         template = """
 Instructions:
-- You are a text based search engine
 - Provide keywords and summary which should be relevant to answer the question.
 - Provide detailed responses that relate to the humans prompt.
 - If there is a code block in the answer then wrap it in triple backticks.
