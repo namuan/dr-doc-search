@@ -1,3 +1,9 @@
+## 1.5.0 (2023-01-29)
+
+### Feat
+
+- Allow user to specify a different LLM instead of OpenAI
+
 ## 1.4.1 (2023-01-14)
 
 ### Fix

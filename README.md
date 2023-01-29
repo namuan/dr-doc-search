@@ -41,6 +41,8 @@ Here I'm using a PDF file generated from this page [Parable of a Monetary Econom
 
 Before running this, you need to set up your OpenAI API key. You can get it from [OpenAI](https://beta.openai.com/account/api-keys).
 
+> From version 1.5.0, you can skip OpenAI and use HuggingFace models to generate embeddings and answers.
+
 ```shell
 export OPENAI_API_KEY=<your-openai-api-key>
 ```
@@ -49,6 +51,12 @@ The run the following command to start the training process:
 
 ```shell
 dr-doc-search --train -i ~/Downloads/parable-of-a-monetary-economy-heteconomist.pdf
+```
+
+Use `huggingface` for generating embeddings:
+
+```shell
+dr-doc-search --train -i ~/Downloads/parable-of-a-monetary-economy-heteconomist.pdf --embedding huggingface
 ```
 
 The training process generates some temporary files in the `OutputDir/dr-doc-search/<pdf-name>` folder under your home directory.
@@ -87,6 +95,12 @@ Or You can open up a web interface (on port :5006) to ask questions:
 
 ```shell
 dr-doc-search --web-app -i ~/Downloads/parable-of-a-monetary-economy-heteconomist.pdf
+```
+
+To use `huggingface` model, provide the `--llm` argument:
+
+```shell
+dr-doc-search --web-app -i ~/Downloads/parable-of-a-monetary-economy-heteconomist.pdf --llm huggingface
 ```
 
 There are more options for choose the start and end pages for the PDF file.
