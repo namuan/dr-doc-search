@@ -1,3 +1,9 @@
+## 1.6.0 (2023-02-05)
+
+### Feat
+
+- Set temperature when working with OpenAI feat: Store chat in a chat archive which persists between sessions
+
 ## 1.5.1 (2023-01-29)
 
 ### Fix
