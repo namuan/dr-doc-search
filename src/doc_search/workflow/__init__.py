@@ -66,6 +66,12 @@ def pdf_to_index_path(app_dir: Path, input_pdf_path: Path) -> Path:
     return output_dir / "docsearch.index"
 
 
+def pdf_to_chat_archive_path(app_dir: Path, input_pdf_path: Path) -> Path:
+    output_dir = output_directory_for_pdf(app_dir, input_pdf_path) / "chat"
+    output_dir.mkdir(parents=True, exist_ok=True)
+    return output_dir / "archive.md"
+
+
 class VerifyInputFile(WorkflowBase):
     """
     Verify input file and return pdf stats
@@ -269,7 +275,7 @@ ${question}
             )
             return HuggingFacePipeline(pipeline=pipe)
         else:
-            return OpenAI()
+            return OpenAI(temperature=0)
 
     def execute(self) -> dict:
         llm = self.llm_provider()

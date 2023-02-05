@@ -8,6 +8,7 @@ from py_executable_checklist.workflow import run_workflow
 from doc_search.workflow import (
     inference_workflow_steps,
     pdf_name_from,
+    pdf_to_chat_archive_path,
     pdf_to_faiss_db_path,
     pdf_to_index_path,
 )
@@ -20,7 +21,7 @@ panel_conversations = []  # store all panel objects in a list
 global_context = {}  # store workflow context
 
 
-def add_qa_to_panel(question: str, answer: str) -> None:
+def add_qa_to_panel(question: str, answer: str) -> str:
     qa_block = f"""
 🙂    **{question}**
 
@@ -38,6 +39,7 @@ def add_qa_to_panel(question: str, answer: str) -> None:
             ),
         )
     )
+    return qa_block
 
 
 def get_conversations(_: Any) -> pn.Column:
@@ -48,7 +50,9 @@ def get_conversations(_: Any) -> pn.Column:
         run_workflow(global_context, inference_workflow_steps())
         openai_answer = global_context["output"]
         logging.info("Answer: %s", openai_answer)
-        add_qa_to_panel(input_question, openai_answer)
+        qa_block = add_qa_to_panel(input_question, openai_answer)
+        with open(global_context["archive_file"], "a") as f:
+            f.write(qa_block)
     txt_input.value_input = ""
     return pn.Column(*(reversed(panel_conversations)))
 
@@ -61,6 +65,7 @@ def run_web(context: dict) -> None:
     global global_context
     context["index_path"] = pdf_to_index_path(context["app_dir"], context["input_pdf_path"])
     context["faiss_db"] = pdf_to_faiss_db_path(context["app_dir"], context["input_pdf_path"])
+    context["archive_file"] = pdf_to_chat_archive_path(context["app_dir"], context["input_pdf_path"])
     global_context = context
     interactive_conversation = pn.bind(get_conversations, btn_ask)
 
