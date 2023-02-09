@@ -47,7 +47,7 @@ Before running this, you need to set up your OpenAI API key. You can get it from
 export OPENAI_API_KEY=<your-openai-api-key>
 ```
 
-The run the following command to start the training process:
+Then run the following command to start the training process:
 
 ```shell
 dr-doc-search --train -i ~/Downloads/parable-of-a-monetary-economy-heteconomist.pdf
