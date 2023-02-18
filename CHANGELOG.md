@@ -1,3 +1,9 @@
+## 1.6.1 (2023-02-18)
+
+### Fix
+
+- Downgrade supported Python version to 3.8.1
+
 ## 1.6.0 (2023-02-05)
 
 ### Feat
