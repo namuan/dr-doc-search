@@ -49,7 +49,7 @@ repos:
         language: system
         types: [python]
 -   repo: https://github.com/commitizen-tools/commitizen
-    rev: v2.40.0
+    rev: v2.42.0
     hooks:
       - id: commitizen
         stages: [commit-msg]
