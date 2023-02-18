@@ -1,3 +1,9 @@
+## 1.6.3 (2023-02-18)
+
+### Fix
+
+- Support ImageMagick on Windows
+
 ## 1.6.2 (2023-02-18)
 
 ### Fix
