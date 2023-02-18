@@ -25,6 +25,15 @@ See [tweet](https://twitter.com/deskriders_twt/status/1612088387984588802) for f
 - [Tessaract OCR](https://github.com/tesseract-ocr/tesseract)
 - [ImageMagick](https://imagemagick.org/index.php)
 
+> **Note:**
+> If you are using Windows, then make sure that you set the location
+> of ImageMagick executable in the `IMCONV` environment variable.
+
+```shell
+# For example, if you have installed ImageMagick in PROGRAMFILES\ImageMagick-7.1.0-Q16-HDRI
+set IMCONV="%PROGRAMFILES%\ImageMagick-7.1.0-Q16-HDRI\magick"
+```
+
 ## Installation
 
 ```sh
